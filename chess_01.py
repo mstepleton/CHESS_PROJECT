@@ -14,7 +14,7 @@ class Board:
 
     def print_board(self):
         for i in self.board:
-            print(i)
+            if i =
 
 
 class Piece:
@@ -42,6 +42,8 @@ class King(Piece):
         Piece.__init__(self, team)
         self.square = square
 
+    def check_move(self, square, dest):
+        if abs(square[0] - dest[0]) <= 1 and abs(square[1] - dest[1]) <= 1:
 
 class Game:
     """ This class controls the flow of the game and the decision-making of the AI.  Also:
@@ -53,7 +55,7 @@ class Game:
         self.wking = King(team = 'W', square = (7, 3))
 
 
-g = Engine()
+g = Game()
 b = g.board
 b.print_board()
 wk = g.wking
