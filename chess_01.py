@@ -12,15 +12,22 @@ class Board:
         self.column = [0, 1, 2, 3, 4, 5, 6, 7]
         self.squares = [(a, b) for a in self.row for b in self.column]
         self.board = dict((key, '.') for key in self.squares)
-        self.board[(0, 4)] = 'K'
+
 
 
     def print_board(self):
         for i in range(8)[::-1]:
             row = ''
             for j in range(8):
-               row += '  ' + self.board[(i,j)]
+               row += ' ' + self.board[(i,j)]
             print(row)
+
+    def check_pieces(self):
+        pass
+
+
+    def move_piece(self, piece, dest):
+        pass
 
 
 class Piece:
@@ -41,11 +48,12 @@ class King(Piece):
         - This piece's moveset
         -
     """
+    KingList = []
 
     def __init__(self, team, square):
         Piece.__init__(self, team)
         self.square = square
-
+        self.KingList.append(team)
 
     def check_move(self, square, dest):
         if abs(square[0] - dest[0]) <= 1 and abs(square[1] - dest[1]) <= 1:
@@ -63,14 +71,12 @@ class Game:
     """
     def __init__(self):
         self.board = Board()
-        self.wking = King(team = 'W', square = (7, 3))
+        WhiteKing = King(self, team='white', square = (0, 4))
 
 
 g = Game()
 b = g.board
 b.print_board()
-wk = g.wking
-print(wk.square)
-wk.move(dest = (8,4))
-print(wk.square)
+
+
 
