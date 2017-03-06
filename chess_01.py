@@ -10,11 +10,15 @@ class Board:
     def __init__(self):
         self.row = [0, 1, 2, 3, 4, 5, 6, 7]
         self.column = [0, 1, 2, 3, 4, 5, 6, 7]
-        self.board = [(a, b) for a in self.row for b in self.column]
+        self.squares = [(a, b) for a in self.row for b in self.column]
+        self.board = dict((key, '.') for key in self.squares)
 
     def print_board(self):
-        for i in self.board:
-            if i =
+        for i in range(8):
+            row = ''
+            for j in range(8):
+               row += '  ' + self.board[(i,j)]
+            print(row)
 
 
 class Piece:
@@ -25,6 +29,7 @@ class Piece:
 
     def __init__(self, team):
         self.team = team
+
 
     def move(self, dest):
         self.square = dest
@@ -44,7 +49,7 @@ class King(Piece):
 
     def check_move(self, square, dest):
         if abs(square[0] - dest[0]) <= 1 and abs(square[1] - dest[1]) <= 1:
-
+            pass
 class Game:
     """ This class controls the flow of the game and the decision-making of the AI.  Also:
         - Function to check for game state (mate, etc.)
