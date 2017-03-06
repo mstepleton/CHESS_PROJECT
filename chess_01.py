@@ -12,9 +12,11 @@ class Board:
         self.column = [0, 1, 2, 3, 4, 5, 6, 7]
         self.squares = [(a, b) for a in self.row for b in self.column]
         self.board = dict((key, '.') for key in self.squares)
+        self.board[(0, 4)] = 'K'
+
 
     def print_board(self):
-        for i in range(8):
+        for i in range(8)[::-1]:
             row = ''
             for j in range(8):
                row += '  ' + self.board[(i,j)]
@@ -31,9 +33,6 @@ class Piece:
         self.team = team
 
 
-    def move(self, dest):
-        self.square = dest
-        return self.square
 
 class King(Piece):
     """ This is the White King piece class.  It will store information about this piece.
@@ -47,9 +46,16 @@ class King(Piece):
         Piece.__init__(self, team)
         self.square = square
 
+
     def check_move(self, square, dest):
         if abs(square[0] - dest[0]) <= 1 and abs(square[1] - dest[1]) <= 1:
             pass
+
+    def move(self, dest):
+        self.square = dest
+        return self.square
+
+
 class Game:
     """ This class controls the flow of the game and the decision-making of the AI.  Also:
         - Function to check for game state (mate, etc.)
