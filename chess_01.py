@@ -36,8 +36,9 @@ class Piece:
         - not sure - probably more things
     """
 
-    def __init__(self, team):
+    def __init__(self, team, square):
         self.team = team
+        self.square = square
 
 
 
@@ -50,14 +51,15 @@ class King(Piece):
     """
     KingList = []
 
-    def __init__(self, team, square):
-        Piece.__init__(self, team)
-        self.square = square
+    def __init__(self):
+        Piece.__init__(self, team, square)
         self.KingList.append(team)
 
+    """
     def check_move(self, square, dest):
         if abs(square[0] - dest[0]) <= 1 and abs(square[1] - dest[1]) <= 1:
             pass
+    """
 
     def move(self, dest):
         self.square = dest
