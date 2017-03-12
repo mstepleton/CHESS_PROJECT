@@ -40,10 +40,6 @@ class Piece:
        self.status = status
        pass
 
-    def move(self, b, p, dest):
-        if p.check_move(b, dest) == True:
-            b.board[dest] = p.name
-
 
 class Pawn(Piece):
     """ This is the White King piece class.  It will store information about this piece.
@@ -90,9 +86,18 @@ class King(Piece):
         Piece.__init__(self)
         self.KingList.append(team)
 
-    def check_move(self, square, dest):
-        if abs(square[0] - dest[0]) <= 1 and abs(square[1] - dest[1]) <= 1:
-            pass
+    def check_move(self, b, dest):
+        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
+            if b.board[dest] == '..':
+                return 'Empty'
+            elif self.name[0].isupper == b.board[dest][0].isupper:
+                return 'Occupied'
+            elif self.name[0].isupper != b.board[dest][0].isupper:
+                return 'Take'
+            else:
+                return 'Error'
+            else:
+                return 'Invalid Move'
 
 
 
@@ -128,16 +133,16 @@ class Game:
 
     def play(self):
         print('Game Starting!')
-        while self.game:
-            g.board.print_board()
-            print('Time to make a move!')
-            piece_input = input('Choose a piece: ')
-            dest_row = int(input('Choose row destination'))
-            dest_column = int(input('Choose column destination'))
-            dest_input = (dest_row, dest_column)
-            g.move(b=g.board, p=eval('g.'+piece_input), dest=dest_input)
-            print('move over!')
-            continue
+        while self.game == True:
+            self.Turn = True
+            while self.turn == True:
+                g.board.print_board()
+                print('Time to make a move!')
+                piece_input = input('Choose a piece: ')
+                dest_input = input('Choose a destination square: ')
+                g.move(b=g.board, p=eval('g.'+piece_input), dest=eval(dest_input))
+                print('move over!')
+                self.turn = False
 
 
 
