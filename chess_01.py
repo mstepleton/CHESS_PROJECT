@@ -14,7 +14,6 @@ class Board:
         self.board = dict((key, '.') for key in self.squares)
 
 
-
     def print_board(self):
         for i in range(8)[::-1]:
             row = ''
@@ -35,11 +34,13 @@ class Piece:
         - Whether the piece is still on the board.
         - not sure - probably more things
     """
-
-    def __init__(self, team, square):
+    def __init__(self, team='white', square = (0,0)):
         self.team = team
         self.square = square
 
+    def move(self, dest):
+        self.square = dest
+        return self.square
 
 
 class King(Piece):
@@ -52,18 +53,15 @@ class King(Piece):
     KingList = []
 
     def __init__(self):
-        Piece.__init__(self, team, square)
+        Piece.__init__(self)
         self.KingList.append(team)
 
-    """
+
     def check_move(self, square, dest):
         if abs(square[0] - dest[0]) <= 1 and abs(square[1] - dest[1]) <= 1:
             pass
-    """
 
-    def move(self, dest):
-        self.square = dest
-        return self.square
+
 
 
 class Game:
@@ -73,7 +71,7 @@ class Game:
     """
     def __init__(self):
         self.board = Board()
-        WhiteKing = King(self, team='white', square = (0, 4))
+        WhiteKing = King()
 
 
 g = Game()
