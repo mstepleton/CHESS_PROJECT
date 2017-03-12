@@ -21,6 +21,8 @@ class Board:
             for j in range(8):
                row += ' ' + self.board[(i,j)]
             print(row)
+        print('White Graveyard: ', self.white_graveyard)
+        print('Black Graveyard: ', self.black_graveyard)
 
     def add_piece(self, p):
         self.board[p.square] = p.name
@@ -39,7 +41,7 @@ class Piece:
        pass
 
     def move(self, b, p, dest):
-        if p.check_move(dest) == True:
+        if p.check_move(b, dest) == True:
             b.board[dest] = p.name
 
 
@@ -60,13 +62,17 @@ class Pawn(Piece):
         b.board[square] = self.name
 
     def check_move(self, b, dest):
-        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) == 0:
-            if b.board[(dest)] == '..':
+        if dest[0] - self.square[0] == 1 and abs(self.square[1] - dest[1]) == 0:
+            if b.board[dest] == '..':
                 return 'Empty'
-            elif b.board[(dest])[0].isupper:
-        if
+            elif self.name[0].isupper == b.board[dest][0].isupper:
+                return 'Occupied'
+            elif self.name[0].isupper != b.board[dest][0].isupper:
+                return 'Take'
+            else:
+                return 'Error'
         else:
-            return False
+            return 'Invalid Move'
 
 class King(Piece):
     """ This is the White King piece class.  It will store information about this piece.
@@ -98,55 +104,43 @@ class Game:
     """
     def __init__(self):
         self.board = Board()
+        self.game = True
         self.P0 = Pawn(b=self.board, team='white', square=(1, 0), name='P0')
-
-        """
-        P1 = Pawn(team='white', square=(1, 1), name = 'P1')
-        P2 = Pawn(team='white', square=(1, 2), name = 'P2')
-        P3 = Pawn(team='white', square=(1, 3), name = 'P3')
-        P4 = Pawn(team='white', square=(1, 4), name = 'P4')
-        P5 = Pawn(team='white', square=(1, 5), name = 'P5')
-        P6 = Pawn(team='white', square=(1, 6), name = 'P6')
-        P7 = Pawn(team='white', square=(1, 7), name = 'P7')
-        R1 = King(team='white', square=(0, 0), name='R1')
-        K1 = King(team='white', square=(0, 1), name = 'K1')
-        B1 = King(team='white', square=(0, 2), name='B1')
-        QQ = King(team='white', square=(0, 3), name='QQ')
-        KK = King(team='white', square=(0, 4), name='KK')
-        B2 = King(team='white', square=(0, 5), name='B2')
-        K2 = King(team='white', square=(0, 6), name='K2')
-        R2 = King(team='white', square=(0, 7), name='R2')
-        self.board.add_piece(self.P0)
-        self.board.add_piece(P1)
-        self.board.add_piece(P2)
-        self.board.add_piece(P3)
-        self.board.add_piece(P4)
-        self.board.add_piece(P5)
-        self.board.add_piece(P6)
-        self.board.add_piece(P7)
-        self.board.add_piece(R1)
-        self.board.add_piece(K1)
-        self.board.add_piece(B1)
-        self.board.add_piece(QQ)
-        self.board.add_piece(KK)
-        self.board.add_piece(B2)
-        self.board.add_piece(K2)
-        self.board.add_piece(R2)
-"""
+        self.p1 = Pawn(b=self.board, team='black', square=(3, 0), name='p1')
+        self.p2 = Pawn(b=self.board, team='black', square=(2, 0), name='p2')
 
     def move(self, b, p, dest):
-        if p.check_move(dest) == True:
+        if p.check_move(b, dest) == 'Take':
+            if b.board[dest].isupper:
+                self.board.white_graveyard.append(b.board[dest])
+            else:
+                self.board.black_graveyard.append(b.board[dest])
             b.board[p.square] = '..'
             b.board[dest] = p.name
+            p.square = dest
+            print('Piece Taken!')
+        if p.check_move(b, dest) == 'Invalid Move':
+            print('Invalid Move!')
+
+    def play(self):
+        print('Game Starting!')
+        while self.game:
+
+
+
+
+
 
 
 
 g = Game()
-g.board.print_board()
-print(g.P0.check_move((2,0)))
-g.move(g.board, g.P0, (2, 0))
-print('--------')
+print(g.P0.check_move(g.board, (2, 0)))
 
+
+
+g.board.print_board()
+g.move(b=g.board, p=g.P0, dest=(2, 0))
+print('--------')
 g.board.print_board()
 
 
