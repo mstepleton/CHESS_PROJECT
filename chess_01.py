@@ -11,8 +11,8 @@ class Board:
         self.row = [0, 1, 2, 3, 4, 5, 6, 7]
         self.column = [0, 1, 2, 3, 4, 5, 6, 7]
         self.squares = [(a, b) for a in self.row for b in self.column]
-        self.board = dict((key, '.') for key in self.squares)
-
+        self.board = dict((key, '..') for key in self.squares)
+        self.board_set()
 
     def print_board(self):
         for i in range(8)[::-1]:
@@ -20,6 +20,33 @@ class Board:
             for j in range(8):
                row += ' ' + self.board[(i,j)]
             print(row)
+
+    def board_set(self):
+        # White Pieces
+        for i in range(8):
+            self.board[(1,i)] = 'P'+str(i)
+        self.board[(0,0)] = 'R1'
+        self.board[(0,1)] = 'K1'
+        self.board[(0,2)] = 'B1'
+        self.board[(0,3)] = 'QU'
+        self.board[(0,4)] = 'KI'
+        self.board[(0,5)] = 'B2'
+        self.board[(0,6)] = 'K2'
+        self.board[(0,7)] = 'R2'
+        # Black Pieces
+        for i in range(8):
+            self.board[(6, i)] = 'p' + str(i)
+        self.board[(7, 0)] = 'r1'
+        self.board[(7, 1)] = 'k1'
+        self.board[(7, 2)] = 'b1'
+        self.board[(7, 3)] = 'qu'
+        self.board[(7, 4)] = 'ki'
+        self.board[(7, 5)] = 'b2'
+        self.board[(7, 6)] = 'k2'
+        self.board[(7, 7)] = 'r2'
+
+
+
 
     def check_pieces(self):
         pass
@@ -34,9 +61,8 @@ class Piece:
         - Whether the piece is still on the board.
         - not sure - probably more things
     """
-    def __init__(self, team='white', square = (0,0)):
-        self.team = team
-        self.square = square
+    def __init__(self):
+       pass
 
     def move(self, dest):
         self.square = dest
@@ -52,7 +78,9 @@ class King(Piece):
     """
     KingList = []
 
-    def __init__(self):
+    def __init__(self, team, square):
+        self.team = team
+        self.square = square
         Piece.__init__(self)
         self.KingList.append(team)
 
@@ -71,7 +99,7 @@ class Game:
     """
     def __init__(self):
         self.board = Board()
-        WhiteKing = King()
+        WhiteKing = King(team='white', square=(0,4))
 
 
 g = Game()
