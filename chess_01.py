@@ -106,10 +106,14 @@ class Game:
         self.board = Board()
         self.game = True
         self.P0 = Pawn(b=self.board, team='white', square=(1, 0), name='P0')
-        self.p1 = Pawn(b=self.board, team='black', square=(3, 0), name='p1')
-        self.p2 = Pawn(b=self.board, team='black', square=(2, 0), name='p2')
+        self.p0 = Pawn(b=self.board, team='black', square=(6, 0), name='p0')
+
 
     def move(self, b, p, dest):
+        if p.check_move(b, dest) == 'Empty':
+            b.board[p.square] = '..'
+            b.board[dest] = p.name
+            p.square = dest
         if p.check_move(b, dest) == 'Take':
             if b.board[dest].isupper:
                 self.board.white_graveyard.append(b.board[dest])
@@ -125,7 +129,15 @@ class Game:
     def play(self):
         print('Game Starting!')
         while self.game:
-
+            g.board.print_board()
+            print('Time to make a move!')
+            piece_input = input('Choose a piece: ')
+            dest_row = int(input('Choose row destination'))
+            dest_column = int(input('Choose column destination'))
+            dest_input = (dest_row, dest_column)
+            g.move(b=g.board, p=eval('g.'+piece_input), dest=dest_input)
+            print('move over!')
+            continue
 
 
 
@@ -134,14 +146,7 @@ class Game:
 
 
 g = Game()
-print(g.P0.check_move(g.board, (2, 0)))
-
-
-
-g.board.print_board()
-g.move(b=g.board, p=g.P0, dest=(2, 0))
-print('--------')
-g.board.print_board()
+g.play()
 
 
 
