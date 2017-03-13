@@ -133,16 +133,21 @@ class Game:
         elif p.check_move(b, dest) == 'Invalid Move':
             print('Invalid Move!')
 
-    def play(self):
+    def play(self, b):
         print('Game Starting!')
         while self.game == True:
             self.team_turn = next(self.teams)
             while self.turn == True:
                 g.board.print_board()
                 print('Turn: '+self.team_turn)
-                piece_input = input('Choose a piece: ')
-                dest_input = str(input('Choose a destination square: '))
-                g.move(b=g.board, p=eval('g.'+piece_input), dest=eval(dest_input))
+                while True:
+                    piece_input = input('Choose a piece: ')
+                    dest_input = str(input('Choose a destination square: '))
+                    if eval('g.'+piece_input).check_move(b, eval(dest_input)) == 'Invalid Move':
+                        print('Invalid square.  Please try again.')
+                    else:
+                        g.move(b=g.board, p=eval('g.'+piece_input), dest=eval(dest_input))
+                        break
                 print('move over!')
                 break
 
@@ -153,7 +158,7 @@ class Game:
 
 
 g = Game()
-g.play()
+g.play(g.board.board)
 
 
 
