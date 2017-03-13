@@ -1,3 +1,5 @@
+from itertools import cycle
+
 class Board:
     """ This class is for the board.  It will:
         - Build the board when the game is initiall started
@@ -48,7 +50,6 @@ class Pawn(Piece):
         - This piece's moveset
         -
     """
-    PawnList = []
 
     def __init__(self, b, team, square, name):
         self.team = team
@@ -77,7 +78,6 @@ class King(Piece):
         - This piece's moveset
         -
     """
-    KingList = []
 
     def __init__(self, team, square, name):
         self.team = team
@@ -96,8 +96,8 @@ class King(Piece):
                 return 'Take'
             else:
                 return 'Error'
-            else:
-                return 'Invalid Move'
+        else:
+            return 'Invalid Move'
 
 
 
@@ -110,8 +110,10 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.game = True
-        self.P0 = Pawn(b=self.board, team='white', square=(1, 0), name='P0')
-        self.p0 = Pawn(b=self.board, team='black', square=(6, 0), name='p0')
+        self.turn = True
+        self.teams =cycle(['White', 'Black'])
+        self.P0 = Pawn(b=self.board, team='White', square=(1, 0), name='P0')
+        self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
 
 
     def move(self, b, p, dest):
@@ -119,7 +121,7 @@ class Game:
             b.board[p.square] = '..'
             b.board[dest] = p.name
             p.square = dest
-        if p.check_move(b, dest) == 'Take':
+        elif p.check_move(b, dest) == 'Take':
             if b.board[dest].isupper:
                 self.board.white_graveyard.append(b.board[dest])
             else:
@@ -128,21 +130,21 @@ class Game:
             b.board[dest] = p.name
             p.square = dest
             print('Piece Taken!')
-        if p.check_move(b, dest) == 'Invalid Move':
+        elif p.check_move(b, dest) == 'Invalid Move':
             print('Invalid Move!')
 
     def play(self):
         print('Game Starting!')
         while self.game == True:
-            self.Turn = True
+            self.team_turn = next(self.teams)
             while self.turn == True:
                 g.board.print_board()
-                print('Time to make a move!')
+                print('Turn: '+self.team_turn)
                 piece_input = input('Choose a piece: ')
-                dest_input = input('Choose a destination square: ')
+                dest_input = str(input('Choose a destination square: '))
                 g.move(b=g.board, p=eval('g.'+piece_input), dest=eval(dest_input))
                 print('move over!')
-                self.turn = False
+                break
 
 
 
