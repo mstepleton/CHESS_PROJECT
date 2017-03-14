@@ -54,12 +54,6 @@ class Piece:
 
 
 class Pawn(Piece):
-    """ This is the White King piece class.  It will store information about this piece.
-        - Whether this piece is on the board
-        - What this piece's location is
-        - This piece's moveset
-        -
-    """
 
     def __init__(self, b, team, square, name):
         self.team = team
@@ -73,6 +67,7 @@ class Pawn(Piece):
 
     def move_search(self, b, p):
         self.available_moves = Piece.available_spaces(self, b, p)
+        print(self.available_moves)
         if self.moved == False:
             for i in self.available_moves.keys():
                 if self.team == 'White':
@@ -85,11 +80,23 @@ class Pawn(Piece):
                         self.possible_moves[i] = 'Empty'
                     elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
                         self.possible_moves[i] = 'Enemy'
+        elif self.moved == True:
+            for i in self.available_moves.keys():
+                if self.team == 'White':
+                    if i[0] - self.square[0] == 1 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
+                        self.possible_moves[i] = 'Empty'
+                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
+                        self.possible_moves[i] = 'Enemy'
+                elif self.team == 'Black':
+                    if self.square[0] - i[0] == 1 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
+                        self.possible_moves[i] = 'Empty'
+                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
+                        self.possible_moves[i] = 'Enemy'
         return self.possible_moves
 
 class Knight(Piece):
 
-    def __init__(self, team, square, name):
+    def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
         self.name = name
@@ -99,75 +106,81 @@ class Knight(Piece):
         Piece.__init__(self)
         b.board[square] = self.name
 
-    def check_move(self, b, dest):
-        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
-            return Piece.check_move(self, b, dest)
-        else:
-            return 'Invalid Move'
+    def move_search(self, b, p):
+        self.available_moves = Piece.available_spaces(self, b, p)
 
+        return self.possible_moves
 
 class Bishop(Piece):
 
-    def __init__(self, team, square, name):
+    def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
         self.name = name
+        self.moved = False
+        self.possible_moves = {}
+        self.available_moves = {}
         Piece.__init__(self)
-        self.KingList.append(team)
+        b.board[square] = self.name
 
-    def check_move(self, b, dest):
-        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
-            return Piece.check_move(self, b, dest)
-        else:
-            return 'Invalid Move'
+    def move_search(self, b, p):
+        self.available_moves = Piece.available_spaces(self, b, p)
+
+        return self.possible_moves
 
 
 class Rook(Piece):
 
-    def __init__(self, team, square, name):
+    def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
         self.name = name
+        self.moved = False
+        self.possible_moves = {}
+        self.available_moves = {}
         Piece.__init__(self)
-        self.KingList.append(team)
+        b.board[square] = self.name
 
-    def check_move(self, b, dest):
-        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
-            return Piece.check_move(self, b, dest)
-        else:
-            return 'Invalid Move'
+    def move_search(self, b, p):
+        self.available_moves = Piece.available_spaces(self, b, p)
+
+        return self.possible_moves
 
 
 class King(Piece):
 
-    def __init__(self, team, square, name):
+    def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
         self.name = name
+        self.moved = False
+        self.possible_moves = {}
+        self.available_moves = {}
         Piece.__init__(self)
-        self.KingList.append(team)
+        b.board[square] = self.name
 
-    def check_move(self, b, dest):
-        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
-            return Piece.check_move(self, b, dest)
-        else:
-            return 'Invalid Move'
+    def move_search(self, b, p):
+        self.available_moves = Piece.available_spaces(self, b, p)
+
+        return self.possible_moves
 
 
 class Queen(Piece):
 
-    def __init__(self, team, square, name):
+    def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
         self.name = name
+        self.moved = False
+        self.possible_moves = {}
+        self.available_moves = {}
         Piece.__init__(self)
-        self.KingList.append(team)
+        b.board[square] = self.name
 
-    def check_move(self, b, dest):
-        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
-            return Piece.check_move(self, b, dest)
-        else:
-            return 'Invalid Move'
+    def move_search(self, b, p):
+        self.available_moves = Piece.available_spaces(self, b, p)
+
+        return self.possible_moves
 class Game:
     """ This class controls the flow of the game and the decision-making of the AI.  Also:
         - Function to check for game state (mate, etc.)
@@ -180,9 +193,11 @@ class Game:
         self.teams =cycle(['White', 'Black'])
         self.P0 = Pawn(b=self.board, team='White', square=(1, 0), name='P0')
         self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
-
-
+        self.p1 = Pawn(b=self.board, team='Black', square=(2, 1), name='p1')
+        self.P1 = Pawn(b=self.board, team='White', square=(1, 1), name='P1')
     def move(self, b, p, dest):
+
+
         if p.check_move(b, dest) == 'Empty':
             b.board[p.square] = '..'
             b.board[dest] = p.name
@@ -224,8 +239,9 @@ class Game:
 
 
 g = Game()
-print(g.P0)
+g.board.print_board()
 print(g.P0.move_search(g.board, g.P0))
+
 
 
 
