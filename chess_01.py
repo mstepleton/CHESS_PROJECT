@@ -42,6 +42,16 @@ class Piece:
        self.status = status
        pass
 
+    # Inheritable Piece of possible_moves
+    def available_spaces(self, b, p):
+        self.move_set = {}
+        for i in b.board.keys():
+            if b.board[i] == '..':
+                self.move_set[i] = 'Empty'
+            elif b.board[i].isupper() != p.name.isupper():
+                self.move_set[i] = 'Enemy'
+        return self.move_set
+
 
 class Pawn(Piece):
     """ This is the White King piece class.  It will store information about this piece.
@@ -55,29 +65,48 @@ class Pawn(Piece):
         self.team = team
         self.square = square
         self.name = name
+        self.moved = False
+        self.possible_moves = {}
+        self.available_moves = {}
+        Piece.__init__(self)
+        b.board[square] = self.name
+
+    def move_search(self, b, p):
+        self.available_moves = Piece.available_spaces(self, b, p)
+        if self.moved == False:
+            for i in self.available_moves.keys():
+                if self.team == 'White':
+                    if 0 < i[0] - self.square[0] <= 2 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
+                        self.possible_moves[i] = 'Empty'
+                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
+                        self.possible_moves[i] = 'Enemy'
+                elif self.team == 'Black':
+                    if 0 < self.square[0] - i[0] <= 2 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
+                        self.possible_moves[i] = 'Empty'
+                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
+                        self.possible_moves[i] = 'Enemy'
+        return self.possible_moves
+
+class Knight(Piece):
+
+    def __init__(self, team, square, name):
+        self.team = team
+        self.square = square
+        self.name = name
+        self.moved = False
+        self.possible_moves = {}
+        self.available_moves = {}
         Piece.__init__(self)
         b.board[square] = self.name
 
     def check_move(self, b, dest):
-        if dest[0] - self.square[0] == 1 and abs(self.square[1] - dest[1]) == 0:
-            if b.board[dest] == '..':
-                return 'Empty'
-            elif self.name[0].isupper == b.board[dest][0].isupper:
-                return 'Occupied'
-            elif self.name[0].isupper != b.board[dest][0].isupper:
-                return 'Take'
-            else:
-                return 'Error'
+        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
+            return Piece.check_move(self, b, dest)
         else:
             return 'Invalid Move'
 
-class King(Piece):
-    """ This is the White King piece class.  It will store information about this piece.
-        - Whether this piece is on the board
-        - What this piece's location is
-        - This piece's moveset
-        -
-    """
+
+class Bishop(Piece):
 
     def __init__(self, team, square, name):
         self.team = team
@@ -88,20 +117,57 @@ class King(Piece):
 
     def check_move(self, b, dest):
         if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
-            if b.board[dest] == '..':
-                return 'Empty'
-            elif self.name[0].isupper == b.board[dest][0].isupper:
-                return 'Occupied'
-            elif self.name[0].isupper != b.board[dest][0].isupper:
-                return 'Take'
-            else:
-                return 'Error'
+            return Piece.check_move(self, b, dest)
         else:
             return 'Invalid Move'
 
 
+class Rook(Piece):
+
+    def __init__(self, team, square, name):
+        self.team = team
+        self.square = square
+        self.name = name
+        Piece.__init__(self)
+        self.KingList.append(team)
+
+    def check_move(self, b, dest):
+        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
+            return Piece.check_move(self, b, dest)
+        else:
+            return 'Invalid Move'
 
 
+class King(Piece):
+
+    def __init__(self, team, square, name):
+        self.team = team
+        self.square = square
+        self.name = name
+        Piece.__init__(self)
+        self.KingList.append(team)
+
+    def check_move(self, b, dest):
+        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
+            return Piece.check_move(self, b, dest)
+        else:
+            return 'Invalid Move'
+
+
+class Queen(Piece):
+
+    def __init__(self, team, square, name):
+        self.team = team
+        self.square = square
+        self.name = name
+        Piece.__init__(self)
+        self.KingList.append(team)
+
+    def check_move(self, b, dest):
+        if abs(self.square[0] - dest[0]) <= 1 and abs(self.square[1] - dest[1]) <= 1:
+            return Piece.check_move(self, b, dest)
+        else:
+            return 'Invalid Move'
 class Game:
     """ This class controls the flow of the game and the decision-making of the AI.  Also:
         - Function to check for game state (mate, etc.)
@@ -158,7 +224,8 @@ class Game:
 
 
 g = Game()
-g.play(g.board.board)
+print(g.P0)
+print(g.P0.move_search(g.board, g.P0))
 
 
 
