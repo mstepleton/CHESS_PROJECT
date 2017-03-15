@@ -33,6 +33,7 @@ class Board:
         self.board[p.square] = '..'
 
 
+
 class Piece:
     """ This class is the super class for all pieces. It will store information and attributes common to all pieces:
         - Whether the piece is still on the board.
@@ -60,38 +61,43 @@ class Pawn(Piece):
         self.square = square
         self.name = name
         self.moved = False
-        self.possible_moves = {}
         self.available_moves = {}
+        self.possible_moves = {}
+        self.possible_moves = self.move_search(b)
         Piece.__init__(self)
         b.board[square] = self.name
 
-    def move_search(self, b, p):
-        self.available_moves = Piece.available_spaces(self, b, p)
-        print(self.available_moves)
+    def move_search(self, b):
+        for i in b.board.keys():
+            if b.board[i] == '..':
+                self.available_moves[i] = 'Empty'
+            elif b.board[i].isupper() != self.name.isupper():
+                self.available_moves[i] = 'Enemy'
         if self.moved == False:
             for i in self.available_moves.keys():
                 if self.team == 'White':
                     if 0 < i[0] - self.square[0] <= 2 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
                         self.possible_moves[i] = 'Empty'
-                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
+                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.available_moves[i] == 'Enemy':
                         self.possible_moves[i] = 'Enemy'
                 elif self.team == 'Black':
                     if 0 < self.square[0] - i[0] <= 2 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
                         self.possible_moves[i] = 'Empty'
-                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
+                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.available_moves[i] == 'Enemy':
                         self.possible_moves[i] = 'Enemy'
         elif self.moved == True:
             for i in self.available_moves.keys():
                 if self.team == 'White':
                     if i[0] - self.square[0] == 1 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
                         self.possible_moves[i] = 'Empty'
-                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
+                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.available_moves[i] == 'Enemy':
                         self.possible_moves[i] = 'Enemy'
                 elif self.team == 'Black':
                     if self.square[0] - i[0] == 1 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
                         self.possible_moves[i] = 'Empty'
-                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.availabe_moves[i] == 'Enemy':
+                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.available_moves[i] == 'Enemy':
                         self.possible_moves[i] = 'Enemy'
+        print(self.possible_moves)
         return self.possible_moves
 
 class Knight(Piece):
@@ -101,14 +107,24 @@ class Knight(Piece):
         self.square = square
         self.name = name
         self.moved = False
-        self.possible_moves = {}
         self.available_moves = {}
+        self.possible_moves = {}
+        self.possible_moves = self.move_search(b)
         Piece.__init__(self)
         b.board[square] = self.name
 
-    def move_search(self, b, p):
-        self.available_moves = Piece.available_spaces(self, b, p)
+    def move_search(self, b):
+        for i in b.board.keys():
+            if b.board[i] == '..':
+                self.available_moves[i] = 'Empty'
+            elif b.board[i].isupper() != self.name.isupper():
+                self.available_moves[i] = 'Enemy'
+        for i in [self.square[0] + 2, self.square[1] + 1]:
+            for j in [self.square[1] + 2, self.square[0] + 1]:
+                if i != j and (i, j) in self.available_moves.keys():
+                    self.possible_moves[(i, j)] = self.available_moves[(i, j)]
 
+        print(self.possible_moves)
         return self.possible_moves
 
 class Bishop(Piece):
@@ -193,16 +209,15 @@ class Game:
         self.teams =cycle(['White', 'Black'])
         self.P0 = Pawn(b=self.board, team='White', square=(1, 0), name='P0')
         self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
-        self.p1 = Pawn(b=self.board, team='Black', square=(2, 1), name='p1')
         self.P1 = Pawn(b=self.board, team='White', square=(1, 1), name='P1')
+        self.K0 = Knight(b=self.board, team='White', square=(0,1), name='K0')
+
     def move(self, b, p, dest):
-
-
-        if p.check_move(b, dest) == 'Empty':
+        if p.possible_moves.get(dest, 'Invalid') == 'Empty':
             b.board[p.square] = '..'
             b.board[dest] = p.name
             p.square = dest
-        elif p.check_move(b, dest) == 'Take':
+        elif p.possible_moves.get(dest, 'Invalid') == 'Enemy':
             if b.board[dest].isupper:
                 self.board.white_graveyard.append(b.board[dest])
             else:
@@ -211,8 +226,12 @@ class Game:
             b.board[dest] = p.name
             p.square = dest
             print('Piece Taken!')
-        elif p.check_move(b, dest) == 'Invalid Move':
-            print('Invalid Move!')
+        elif p.possible_moves.get(dest, 'Invalid') == 'Invalid':
+            print('Invalid Move! Valid moves are:')
+            for i in p.possible_moves.keys():
+                print(i, end = ', ')
+
+    def mate_check
 
     def play(self, b):
         print('Game Starting!')
@@ -224,7 +243,9 @@ class Game:
                 while True:
                     piece_input = input('Choose a piece: ')
                     dest_input = str(input('Choose a destination square: '))
-                    if eval('g.'+piece_input).check_move(b, eval(dest_input)) == 'Invalid Move':
+                    print(eval('g.'+piece_input))
+                    print( eval('g.'+piece_input).possible_moves.keys() )
+                    if eval(dest_input) not in eval('g.'+piece_input).possible_moves.keys():
                         print('Invalid square.  Please try again.')
                     else:
                         g.move(b=g.board, p=eval('g.'+piece_input), dest=eval(dest_input))
@@ -239,8 +260,7 @@ class Game:
 
 
 g = Game()
-g.board.print_board()
-print(g.P0.move_search(g.board, g.P0))
+g.play(g.board)
 
 
 
