@@ -65,6 +65,8 @@ class Pawn(Piece):
         return move_set
 
     def move_search(self, b):
+        print(self.move_set)
+        print(self.square)
         self.possible_moves = {}
         # Open
         if self.moved == False:
@@ -74,8 +76,8 @@ class Pawn(Piece):
                 else:
                     break
         else:
-            if b.board[(self.square[0] + 1, self.square[1])] == '..':
-                self.possible_moves[(self.square[0] + 1, self.square[1])] = 'Empty'
+            if b.board[(self.square[0] + self.move_set[0][0], self.square[1])] == '..':
+                self.possible_moves[(self.square[0] + self.move_set[0][0], self.square[1])] = 'Empty'
         # Enemy Spaces
         for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set_enemy]:
             if i in b.board.keys() and b.board[i] != '..' and b.board[i].isupper() != self.name.isupper():
@@ -103,8 +105,6 @@ class Knight(Piece):
                 self.possible_moves[i] = 'Enemy'
         return self.possible_moves
 
-        print(self.possible_moves)
-        return self.possible_moves
 
 class Bishop(Piece):
     def __init__(self, b, team, square, name):
@@ -112,29 +112,33 @@ class Bishop(Piece):
         self.square = square
         self.name = name
         self.moved = False
-        self.move_set = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8),
-                         (-1, 1), (-2, 2), (-3, 3), (-4, 4), (-5, 5), (-6, 6), (-7, 7), (-8, 8),
-                         (1, -1), (2, -2), (3, -3), (4, -4), (5, -5), (6, -6), (7, -7), (8, -8),
-                         (-1, -1), (-2, -2), (-3, -3), (-4, -4), (-5, -5), (-6, -6), (-7, -7), (-8, -8)]
+        self.move_set = [[(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8)],
+                         [(-1, 1), (-2, 2), (-3, 3), (-4, 4), (-5, 5), (-6, 6), (-7, 7), (-8, 8)],
+                         [(1, -1), (2, -2), (3, -3), (4, -4), (5, -5), (6, -6), (7, -7), (8, -8)],
+                         [(-1, -1), (-2, -2), (-3, -3), (-4, -4), (-5, -5), (-6, -6), (-7, -7), (-8, -8)]]
         self.possible_moves = self.move_search(b)
         b.board[square] = self.name
 
     def move_search(self, b):
         self.possible_moves = {}
-        for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set]:
-            if i in b.board.keys() and b.board[i] == '..':
-                self.possible_moves[i] = 'Empty'
-            else:
-                break
-        for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set]:
-            if i in b.board.keys() and b.board[i] != '..' and b.board[i].isupper() != self.name.isupper():
-                self.possible_moves[i] = 'Enemy'
-            else:
-                break
+        for direction in self.move_set:
+            for j in [(self.square[0] + i[0], self.square[1] + i[1]) for i in direction]:
+                if j in b.board.keys() and b.board[j] == '..':
+                    self.possible_moves[j] = 'Empty'
+                elif j in b.board.keys() and b.board[j] != '..' and b.board[j].isupper() != self.name.isupper():
+                    self.possible_moves[j] = 'Enemy'
+                    break
+                else:
+                    break
+        """for direction in self.move_set:
+            for j in [(self.square[0] + i[0], self.square[1] + i[1]) for i in direction]:
+                if j in b.board.keys() and b.board[j] != '..' and b.board[j].isupper() != self.name.isupper():
+                    self.possible_moves[j] = 'Enemy'
+                else:
+                    break
+        """
         return self.possible_moves
 
-        print(self.possible_moves)
-        return self.possible_moves
 
 class Rook(Piece):
 
@@ -143,15 +147,26 @@ class Rook(Piece):
         self.square = square
         self.name = name
         self.moved = False
-        self.possible_moves = {}
-        self.available_moves = {}
-        Piece.__init__(self)
+        self.move_set = [[(1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0)],
+                         [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8)],
+                         [(-1, 0), (-2, 0), (-3, 0), (-4, 0), (-5, 0), (-6, 0), (-7, 0), (-8, 0)],
+                         [(0, -1), (0, -2), (0, -3), (0, -4), (0, -5), (0, -6), (0, -7), (0, -8)]]
+        self.possible_moves = self.move_search(b)
         b.board[square] = self.name
 
-    def move_search(self, b, p):
-        self.available_moves = Piece.available_spaces(self, b, p)
-
+    def move_search(self, b):
+        self.possible_moves = {}
+        for direction in self.move_set:
+            for j in [(self.square[0] + i[0], self.square[1] + i[1]) for i in direction]:
+                if j in b.board.keys() and b.board[j] == '..':
+                    self.possible_moves[j] = 'Empty'
+                elif j in b.board.keys() and b.board[j] != '..' and b.board[j].isupper() != self.name.isupper():
+                    self.possible_moves[j] = 'Enemy'
+                    break
+                else:
+                    break
         return self.possible_moves
+
 
 
 class King(Piece):
@@ -197,15 +212,35 @@ class Game:
         self.board = Board()
         self.game = True
         self.turn = True
-        self.teams =cycle(['White', 'Black'])
+        self.teams = cycle(['White', 'Black'])
         self.P0 = Pawn(b=self.board, team='White', square=(1, 0), name='P0')
-        self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
         self.P1 = Pawn(b=self.board, team='White', square=(1, 1), name='P1')
         self.P2 = Pawn(b=self.board, team='White', square=(1, 2), name='P2')
         self.P3 = Pawn(b=self.board, team='White', square=(1, 3), name='P3')
-        self.K0 = Knight(b=self.board, team='White', square=(0,1), name='K0')
-        self.B0 = Bishop(b=self.board, team='White', square=(0,2), name='B0')
-
+        self.P4 = Pawn(b=self.board, team='White', square=(1, 4), name='P4')
+        self.P5 = Pawn(b=self.board, team='White', square=(1, 5), name='P5')
+        self.P6 = Pawn(b=self.board, team='White', square=(1, 6), name='P6')
+        self.P7 = Pawn(b=self.board, team='White', square=(1, 7), name='P7')
+        self.R0 = Rook(b=self.board, team='White', square=(0, 0), name='R0')
+        self.R1 = Rook(b=self.board, team='White', square=(0, 7), name='R1')
+        self.K0 = Knight(b=self.board, team='White', square=(0, 1), name='K0')
+        self.K1 = Knight(b=self.board, team='White', square=(0, 6), name='K1')
+        self.B0 = Bishop(b=self.board, team='White', square=(0, 2), name='B0')
+        self.B1 = Bishop(b=self.board, team='White', square=(0, 5), name='B1')
+        self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
+        self.p1 = Pawn(b=self.board, team='Black', square=(6, 1), name='p1')
+        self.p2 = Pawn(b=self.board, team='Black', square=(6, 2), name='p2')
+        self.p3 = Pawn(b=self.board, team='Black', square=(6, 3), name='p3')
+        self.p4 = Pawn(b=self.board, team='Black', square=(6, 4), name='p4')
+        self.p5 = Pawn(b=self.board, team='Black', square=(6, 5), name='p5')
+        self.p6 = Pawn(b=self.board, team='Black', square=(6, 6), name='p6')
+        self.p7 = Pawn(b=self.board, team='Black', square=(6, 7), name='p7')
+        self.r0 = Rook(b=self.board, team='Black', square=(7, 0), name='r0')
+        self.r1 = Rook(b=self.board, team='Black', square=(7, 7), name='r1')
+        self.k0 = Knight(b=self.board, team='Black', square=(7, 1), name='k0')
+        self.k1 = Knight(b=self.board, team='Black', square=(7, 6), name='k1')
+        self.b0 = Bishop(b=self.board, team='Black', square=(7, 2), name='b0')
+        self.b1 = Bishop(b=self.board, team='Black', square=(7, 5), name='b1')
 
     def move(self, b, p, dest):
         if p.possible_moves.get(dest, 'Invalid') == 'Empty':
