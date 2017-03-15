@@ -44,14 +44,7 @@ class Piece:
        pass
 
     # Inheritable Piece of possible_moves
-    def available_spaces(self, b, p):
-        self.move_set = {}
-        for i in b.board.keys():
-            if b.board[i] == '..':
-                self.move_set[i] = 'Empty'
-            elif b.board[i].isupper() != p.name.isupper():
-                self.move_set[i] = 'Enemy'
-        return self.move_set
+
 
 
 class Pawn(Piece):
@@ -61,43 +54,32 @@ class Pawn(Piece):
         self.square = square
         self.name = name
         self.moved = False
-        self.available_moves = {}
-        self.possible_moves = {}
+        self.move_set = self.move_set_adjust([(1, 0), (2, 0)])
+        self.move_set_enemy = self.move_set_adjust([(1, -1), (1, 1)])
         self.possible_moves = self.move_search(b)
-        Piece.__init__(self)
         b.board[square] = self.name
 
+    def move_set_adjust(self, move_set):
+        if self.team == 'Black':
+            move_set = [(i[0] * -1, i[1]) for i in move_set]
+        return move_set
+
     def move_search(self, b):
-        for i in b.board.keys():
-            if b.board[i] == '..':
-                self.available_moves[i] = 'Empty'
-            elif b.board[i].isupper() != self.name.isupper():
-                self.available_moves[i] = 'Enemy'
+        self.possible_moves = {}
+        # Open
         if self.moved == False:
-            for i in self.available_moves.keys():
-                if self.team == 'White':
-                    if 0 < i[0] - self.square[0] <= 2 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
-                        self.possible_moves[i] = 'Empty'
-                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.available_moves[i] == 'Enemy':
-                        self.possible_moves[i] = 'Enemy'
-                elif self.team == 'Black':
-                    if 0 < self.square[0] - i[0] <= 2 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
-                        self.possible_moves[i] = 'Empty'
-                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.available_moves[i] == 'Enemy':
-                        self.possible_moves[i] = 'Enemy'
-        elif self.moved == True:
-            for i in self.available_moves.keys():
-                if self.team == 'White':
-                    if i[0] - self.square[0] == 1 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
-                        self.possible_moves[i] = 'Empty'
-                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.available_moves[i] == 'Enemy':
-                        self.possible_moves[i] = 'Enemy'
-                elif self.team == 'Black':
-                    if self.square[0] - i[0] == 1 and self.square[1] - i[1] == 0 and self.available_moves[i] == 'Empty':
-                        self.possible_moves[i] = 'Empty'
-                    elif self.square[0] - i[0] == 1 and abs(self.square[1] - i[1] == 1) and self.available_moves[i] == 'Enemy':
-                        self.possible_moves[i] = 'Enemy'
-        print(self.possible_moves)
+            for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set]:
+                if b.board[i] == '..':
+                    self.possible_moves[i] = 'Empty'
+                else:
+                    break
+        else:
+            if b.board[(self.square[0] + 1, self.square[1])] == '..':
+                self.possible_moves[(self.square[0] + 1, self.square[1])] = 'Empty'
+        # Enemy Spaces
+        for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set_enemy]:
+            if i in b.board.keys() and b.board[i] != '..' and b.board[i].isupper() != self.name.isupper():
+                self.possible_moves[i] = 'Enemy'
         return self.possible_moves
 
 class Knight(Piece):
@@ -107,43 +89,52 @@ class Knight(Piece):
         self.square = square
         self.name = name
         self.moved = False
-        self.available_moves = {}
-        self.possible_moves = {}
+        self.move_set = [(2, 1), (2, -1), (1, 2), (1, -2), (-2, 1), (-2, -1), (-1, 2), (-1, -2)]
         self.possible_moves = self.move_search(b)
-        Piece.__init__(self)
         b.board[square] = self.name
 
     def move_search(self, b):
-        for i in b.board.keys():
-            if b.board[i] == '..':
-                self.available_moves[i] = 'Empty'
-            elif b.board[i].isupper() != self.name.isupper():
-                self.available_moves[i] = 'Enemy'
-        for i in [self.square[0] + 2, self.square[1] + 1]:
-            for j in [self.square[1] + 2, self.square[0] + 1]:
-                if i != j and (i, j) in self.available_moves.keys():
-                    self.possible_moves[(i, j)] = self.available_moves[(i, j)]
+        self.possible_moves = {}
+        for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set]:
+            if i in b.board.keys() and b.board[i] == '..':
+                self.possible_moves[i] = 'Empty'
+        for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set]:
+            if i in b.board.keys() and b.board[i] != '..' and b.board[i].isupper() != self.name.isupper():
+                self.possible_moves[i] = 'Enemy'
+        return self.possible_moves
 
         print(self.possible_moves)
         return self.possible_moves
 
 class Bishop(Piece):
-
     def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
         self.name = name
         self.moved = False
-        self.possible_moves = {}
-        self.available_moves = {}
-        Piece.__init__(self)
+        self.move_set = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8),
+                         (-1, 1), (-2, 2), (-3, 3), (-4, 4), (-5, 5), (-6, 6), (-7, 7), (-8, 8),
+                         (1, -1), (2, -2), (3, -3), (4, -4), (5, -5), (6, -6), (7, -7), (8, -8),
+                         (-1, -1), (-2, -2), (-3, -3), (-4, -4), (-5, -5), (-6, -6), (-7, -7), (-8, -8)]
+        self.possible_moves = self.move_search(b)
         b.board[square] = self.name
 
-    def move_search(self, b, p):
-        self.available_moves = Piece.available_spaces(self, b, p)
-
+    def move_search(self, b):
+        self.possible_moves = {}
+        for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set]:
+            if i in b.board.keys() and b.board[i] == '..':
+                self.possible_moves[i] = 'Empty'
+            else:
+                break
+        for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set]:
+            if i in b.board.keys() and b.board[i] != '..' and b.board[i].isupper() != self.name.isupper():
+                self.possible_moves[i] = 'Enemy'
+            else:
+                break
         return self.possible_moves
 
+        print(self.possible_moves)
+        return self.possible_moves
 
 class Rook(Piece):
 
@@ -210,13 +201,18 @@ class Game:
         self.P0 = Pawn(b=self.board, team='White', square=(1, 0), name='P0')
         self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
         self.P1 = Pawn(b=self.board, team='White', square=(1, 1), name='P1')
+        self.P2 = Pawn(b=self.board, team='White', square=(1, 2), name='P2')
+        self.P3 = Pawn(b=self.board, team='White', square=(1, 3), name='P3')
         self.K0 = Knight(b=self.board, team='White', square=(0,1), name='K0')
+        self.B0 = Bishop(b=self.board, team='White', square=(0,2), name='B0')
+
 
     def move(self, b, p, dest):
         if p.possible_moves.get(dest, 'Invalid') == 'Empty':
             b.board[p.square] = '..'
             b.board[dest] = p.name
             p.square = dest
+            p.moved = True
         elif p.possible_moves.get(dest, 'Invalid') == 'Enemy':
             if b.board[dest].isupper:
                 self.board.white_graveyard.append(b.board[dest])
@@ -226,12 +222,13 @@ class Game:
             b.board[dest] = p.name
             p.square = dest
             print('Piece Taken!')
+            p.moved = True
         elif p.possible_moves.get(dest, 'Invalid') == 'Invalid':
             print('Invalid Move! Valid moves are:')
             for i in p.possible_moves.keys():
                 print(i, end = ', ')
 
-    def mate_check
+    #def mate_check
 
     def play(self, b):
         print('Game Starting!')
@@ -242,6 +239,8 @@ class Game:
                 print('Turn: '+self.team_turn)
                 while True:
                     piece_input = input('Choose a piece: ')
+                    eval('g.' + piece_input).move_search(g.board)
+                    print(eval('g.'+piece_input).possible_moves.keys())
                     dest_input = str(input('Choose a destination square: '))
                     print(eval('g.'+piece_input))
                     print( eval('g.'+piece_input).possible_moves.keys() )
@@ -250,6 +249,7 @@ class Game:
                     else:
                         g.move(b=g.board, p=eval('g.'+piece_input), dest=eval(dest_input))
                         break
+                print('new square: ', eval('g.'+piece_input).square)
                 print('move over!')
                 break
 
