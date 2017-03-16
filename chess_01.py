@@ -1,5 +1,6 @@
 from itertools import cycle
 
+
 class Board:
     """ This class is for the board.  It will:
         - Build the board when the game is initiall started
@@ -21,7 +22,7 @@ class Board:
         for i in range(8)[::-1]:
             row = ''
             for j in range(8):
-               row += ' ' + self.board[(i,j)]
+                row += ' ' + self.board[(i, j)]
             print(row)
         print('White Graveyard: ', self.white_graveyard)
         print('Black Graveyard: ', self.black_graveyard)
@@ -40,16 +41,15 @@ class Piece:
     """
     _registry = []
 
-    def __init__(self, status = True):
-       self.status = status
-       self._registry.append(self)
+    def __init__(self, status=True):
+        self.status = status
+        self._registry.append(self)
 
     def move_search(self):
-    	pass
+        pass
 
 
 class Pawn(Piece):
-
     def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
@@ -87,7 +87,6 @@ class Pawn(Piece):
 
 
 class Knight(Piece):
-
     def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
@@ -110,7 +109,6 @@ class Knight(Piece):
 
 
 class Bishop(Piece):
-    
     def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
@@ -139,7 +137,6 @@ class Bishop(Piece):
 
 
 class Rook(Piece):
-
     def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
@@ -167,9 +164,7 @@ class Rook(Piece):
         return self.possible_moves
 
 
-
 class King(Piece):
-
     def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
@@ -192,7 +187,6 @@ class King(Piece):
 
 
 class Queen(Piece):
-
     def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
@@ -225,19 +219,20 @@ class Queen(Piece):
 
 
 class Player:
-
-	def __init__(self, team = 'White', CPU = False):
-		self.team = team
-		self.CPU = CPU
-		self.wins = 0
-		self.losses = 0
-
+    def __init__(self, team='White', CPU=False):
+        self.team = team
+        self.CPU = CPU
+        self.wins = 0
+        self.losses = 0
+        self.check = False
+        self.mate = False
 
 class Game:
     """ This class controls the flow of the game and the decision-making of the AI.  Also:
         - Function to check for game state (mate, etc.)
         - Function to check for
     """
+
     def __init__(self):
         self.board = Board()
         self.game = True
@@ -246,8 +241,6 @@ class Game:
         self.game_type = self.game_setup()
         self.player1 = Player()
         self.player2 = self.CPU_setup()
-        self.white_mate = False
-        self.black_mate = False
         self.P0 = Pawn(b=self.board, team='White', square=(1, 0), name='P0')
         self.P1 = Pawn(b=self.board, team='White', square=(1, 1), name='P1')
         self.P2 = Pawn(b=self.board, team='White', square=(1, 2), name='P2')
@@ -262,8 +255,8 @@ class Game:
         self.K1 = Knight(b=self.board, team='White', square=(0, 6), name='K1')
         self.B0 = Bishop(b=self.board, team='White', square=(0, 2), name='B0')
         self.B1 = Bishop(b=self.board, team='White', square=(0, 5), name='B1')
-        self.KK = King(b=self.board, team = 'White', square=(0, 3), name = 'KK')
-        self.QQ = Queen(b=self.board, team = 'White', square=(0, 4), name = 'QQ')
+        self.KK = King(b=self.board, team='White', square=(0, 3), name='KK')
+        self.QQ = Queen(b=self.board, team='White', square=(0, 4), name='QQ')
         self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
         self.p1 = Pawn(b=self.board, team='Black', square=(6, 1), name='p1')
         self.p2 = Pawn(b=self.board, team='Black', square=(6, 2), name='p2')
@@ -278,29 +271,46 @@ class Game:
         self.k1 = Knight(b=self.board, team='Black', square=(7, 6), name='k1')
         self.b0 = Bishop(b=self.board, team='Black', square=(7, 2), name='b0')
         self.b1 = Bishop(b=self.board, team='Black', square=(7, 5), name='b1')
-        self.kk = King(b=self.board, team = 'Black', square=(7, 3), name = 'kk')
-        self.qq = Queen(b=self.board, team = 'Black', square=(7, 4), name = 'qq')
+        self.kk = King(b=self.board, team='Black', square=(7, 3), name='kk')
+        self.qq = Queen(b=self.board, team='Black', square=(7, 4), name='qq')
 
     def game_setup(self):
-    	self.game_type = ''
-    	a = int(input('How many players are playing? '))
-    	if a == 1:
-    		self.game_type = 'single'
-    	elif a == 2:
-    		self.game_type = 'multi'
-    	return self.game_type
+        self.game_type = ''
+        a = int(input('How many players are playing? '))
+        if a == 1:
+            self.game_type = 'single'
+        elif a == 2:
+            self.game_type = 'multi'
+        return self.game_type
 
     def CPU_setup(self):
-    	if self.game_type == 'multi':
-    		return Player(team = 'Black', CPU = False)
-    	elif self.game_type == 'single':
-    		return Player(team = 'Black', CPU = True)
+        if self.game_type == 'multi':
+            return Player(team='Black', CPU=False)
+        elif self.game_type == 'single':
+            return Player(team='Black', CPU=True)
 
-    #def game_state_set(self):
-    	# check is black is in mate
+    def game_state_set(self, player):
+        a = [list(i.possible_moves.keys()) for i in Piece._registry if i.team == 'White']
+        b = []
+        for i in a:
+            for j in i:
+                b.append(j)
+        if self.kk.square in b:
+            self.black_check = True
+        if all(item in b for item in list(self.kk.possible_moves.keys())):
+            self.black_mate = True
+        a = [list(i.possible_moves.keys()) for i in Piece._registry if i.team == 'Black']
+        b = []
+        for i in a:
+            for j in i:
+                b.append(j)
+        if self.KK.square in b:
+            self.black_check = True
+        if all(item in b for item in list(self.KK.possible_moves.keys())):
+            self.black_mate = True
 
-    #def game_state_get(self):
-    	# retrieve 
+        # def game_state_get(self):
+        # retrieve
 
     def move(self, b, p, dest):
         if p.possible_moves.get(dest, 'Invalid') == 'Empty':
@@ -321,9 +331,7 @@ class Game:
         elif p.possible_moves.get(dest, 'Invalid') == 'Invalid':
             print('Invalid Move! Valid moves are:')
             for i in p.possible_moves.keys():
-                print(i, end = ', ')
-
-    #def mate_check
+                print(i, end=', ')
 
     def play(self):
         print('Game Starting!')
@@ -331,27 +339,32 @@ class Game:
             self.team_turn = next(self.teams)
             while self.turn == True:
                 g.board.print_board()
-                print('Turn: '+self.team_turn)
+                print('Turn: ' + self.team_turn)
+                self.game_state_set(self.team_turn)
                 while True:
                     piece_input = input('Choose a piece: ')
-                    eval('g.' + piece_input).move_search(g.board)
-                    print(eval('g.'+piece_input).possible_moves.keys())
-                    dest_input = str(input('Choose a destination square: '))
-                    print( eval('g.'+piece_input).possible_moves.keys() )
-                    if eval(dest_input) not in eval('g.'+piece_input).possible_moves.keys():
-                        print('Invalid square.  Please try again.')
+                    if eval('g.' + piece_input).team != self.team_turn:
+                        print('You must select the correct team type')
                     else:
-                        g.move(b=g.board, p=eval('g.'+piece_input), dest=eval(dest_input))
-                        break
-                print('new square: ', eval('g.'+piece_input).square)
+                        eval('g.' + piece_input).move_search(g.board)
+                        print(eval('g.' + piece_input).possible_moves.keys())
+                        dest_input = str(input('Choose a destination square: '))
+                        print(eval('g.' + piece_input).possible_moves.keys())
+                        if eval(dest_input) not in eval('g.' + piece_input).possible_moves.keys():
+                            print('Invalid square.  Please try again.')
+                        else:
+                            g.move(b=g.board, p=eval('g.' + piece_input), dest=eval(dest_input))
+                            break
+                        self.game_state_set()
+                        if self.black_mate == True:
+                            print('Black is in check!')
+                        if self.white_mate == True:
+                            print('White is in check!')
+
+                print('new square: ', eval('g.' + piece_input).square)
                 print('move over!')
                 break
 
 
 g = Game()
 g.play()
-
-
-
-
-
