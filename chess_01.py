@@ -1,4 +1,5 @@
 from itertools import cycle
+import random
 
 
 class Board:
@@ -50,16 +51,19 @@ class Piece:
 
 
 class Pawn(Piece):
-    def __init__(self, b, team, square, name):
+    def __init__(self, b, team, owner, square, name):
         self.team = team
         self.square = square
+        self.owner = owner
         self.name = name
         self.moved = False
         self.move_set = self.move_set_adjust([(1, 0), (2, 0)])
         self.move_set_enemy = self.move_set_adjust([(1, -1), (1, 1)])
         self.possible_moves = self.move_search(b)
+        self.owner = owner
         b.board[square] = self.name
         Piece.__init__(self)
+
 
     def move_set_adjust(self, move_set):
         if self.team == 'Black':
@@ -87,9 +91,10 @@ class Pawn(Piece):
 
 
 class Knight(Piece):
-    def __init__(self, b, team, square, name):
+    def __init__(self, b, team, owner, square, name):
         self.team = team
         self.square = square
+        self.owner = owner
         self.name = name
         self.moved = False
         self.move_set = [(2, 1), (2, -1), (1, 2), (1, -2), (-2, 1), (-2, -1), (-1, 2), (-1, -2)]
@@ -109,9 +114,10 @@ class Knight(Piece):
 
 
 class Bishop(Piece):
-    def __init__(self, b, team, square, name):
+    def __init__(self, b, team, owner, square, name):
         self.team = team
         self.square = square
+        self.owner = owner
         self.name = name
         self.moved = False
         self.move_set = [[(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8)],
@@ -137,9 +143,10 @@ class Bishop(Piece):
 
 
 class Rook(Piece):
-    def __init__(self, b, team, square, name):
+    def __init__(self, b, team, owner, square, name):
         self.team = team
         self.square = square
+        self.owner = owner
         self.name = name
         self.moved = False
         self.move_set = [[(1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0)],
@@ -165,9 +172,10 @@ class Rook(Piece):
 
 
 class King(Piece):
-    def __init__(self, b, team, square, name):
+    def __init__(self, b, team, owner, square, name):
         self.team = team
         self.square = square
+        self.owner = owner
         self.name = name
         self.moved = False
         self.move_set = [(1, 0), (1, 1), (0, 1), (1, -1), (-1, 0), (-1, -1), (-1, 1), (0, -1)]
@@ -187,9 +195,10 @@ class King(Piece):
 
 
 class Queen(Piece):
-    def __init__(self, b, team, square, name):
+    def __init__(self, b, team, owner, square, name):
         self.team = team
         self.square = square
+        self.owner = owner
         self.name = name
         self.moved = False
         self.move_set = [[(1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0)],
@@ -227,6 +236,10 @@ class Player:
         self.check = False
         self.mate = False
 
+
+
+
+
 class Game:
     """ This class controls the flow of the game and the decision-making of the AI.  Also:
         - Function to check for game state (mate, etc.)
@@ -237,42 +250,42 @@ class Game:
         self.board = Board()
         self.game = True
         self.turn = True
-        self.teams = cycle(['White', 'Black'])
         self.game_type = self.game_setup()
         self.player1 = Player()
         self.player2 = self.CPU_setup()
-        self.P0 = Pawn(b=self.board, team='White', square=(1, 0), name='P0')
-        self.P1 = Pawn(b=self.board, team='White', square=(1, 1), name='P1')
-        self.P2 = Pawn(b=self.board, team='White', square=(1, 2), name='P2')
-        self.P3 = Pawn(b=self.board, team='White', square=(1, 3), name='P3')
-        self.P4 = Pawn(b=self.board, team='White', square=(1, 4), name='P4')
-        self.P5 = Pawn(b=self.board, team='White', square=(1, 5), name='P5')
-        self.P6 = Pawn(b=self.board, team='White', square=(1, 6), name='P6')
-        self.P7 = Pawn(b=self.board, team='White', square=(1, 7), name='P7')
-        self.R0 = Rook(b=self.board, team='White', square=(0, 0), name='R0')
-        self.R1 = Rook(b=self.board, team='White', square=(0, 7), name='R1')
-        self.K0 = Knight(b=self.board, team='White', square=(0, 1), name='K0')
-        self.K1 = Knight(b=self.board, team='White', square=(0, 6), name='K1')
-        self.B0 = Bishop(b=self.board, team='White', square=(0, 2), name='B0')
-        self.B1 = Bishop(b=self.board, team='White', square=(0, 5), name='B1')
-        self.KK = King(b=self.board, team='White', square=(0, 3), name='KK')
-        self.QQ = Queen(b=self.board, team='White', square=(0, 4), name='QQ')
-        self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
-        self.p1 = Pawn(b=self.board, team='Black', square=(6, 1), name='p1')
-        self.p2 = Pawn(b=self.board, team='Black', square=(6, 2), name='p2')
-        self.p3 = Pawn(b=self.board, team='Black', square=(6, 3), name='p3')
-        self.p4 = Pawn(b=self.board, team='Black', square=(6, 4), name='p4')
-        self.p5 = Pawn(b=self.board, team='Black', square=(6, 5), name='p5')
-        self.p6 = Pawn(b=self.board, team='Black', square=(6, 6), name='p6')
-        self.p7 = Pawn(b=self.board, team='Black', square=(6, 7), name='p7')
-        self.r0 = Rook(b=self.board, team='Black', square=(7, 0), name='r0')
-        self.r1 = Rook(b=self.board, team='Black', square=(7, 7), name='r1')
-        self.k0 = Knight(b=self.board, team='Black', square=(7, 1), name='k0')
-        self.k1 = Knight(b=self.board, team='Black', square=(7, 6), name='k1')
-        self.b0 = Bishop(b=self.board, team='Black', square=(7, 2), name='b0')
-        self.b1 = Bishop(b=self.board, team='Black', square=(7, 5), name='b1')
-        self.kk = King(b=self.board, team='Black', square=(7, 3), name='kk')
-        self.qq = Queen(b=self.board, team='Black', square=(7, 4), name='qq')
+        self.teams = cycle([self.player1, self.player2])
+        self.P0 = Pawn(b=self.board, team='White', owner = self.player1, square=(1, 0), name='P0')
+        self.P1 = Pawn(b=self.board, team='White', owner = self.player1, square=(1, 1), name='P1')
+        self.P2 = Pawn(b=self.board, team='White', owner = self.player1, square=(1, 2), name='P2')
+        self.P3 = Pawn(b=self.board, team='White', owner = self.player1, square=(1, 3), name='P3')
+        self.P4 = Pawn(b=self.board, team='White', owner = self.player1, square=(1, 4), name='P4')
+        self.P5 = Pawn(b=self.board, team='White', owner = self.player1, square=(1, 5), name='P5')
+        self.P6 = Pawn(b=self.board, team='White', owner = self.player1, square=(1, 6), name='P6')
+        self.P7 = Pawn(b=self.board, team='White', owner = self.player1, square=(1, 7), name='P7')
+        self.R0 = Rook(b=self.board, team='White', owner = self.player1, square=(0, 0), name='R0')
+        self.R1 = Rook(b=self.board, team='White', owner = self.player1, square=(0, 7), name='R1')
+        self.K0 = Knight(b=self.board, team='White', owner = self.player1, square=(0, 1), name='K0')
+        self.K1 = Knight(b=self.board, team='White', owner = self.player1, square=(0, 6), name='K1')
+        self.B0 = Bishop(b=self.board, team='White', owner = self.player1, square=(0, 2), name='B0')
+        self.B1 = Bishop(b=self.board, team='White', owner = self.player1, square=(0, 5), name='B1')
+        self.KK = King(b=self.board, team='White', owner = self.player1, square=(0, 3), name='KK')
+        self.QQ = Queen(b=self.board, team='White', owner = self.player1, square=(0, 4), name='QQ')
+        self.p0 = Pawn(b=self.board, team='Black', owner = self.player2, square=(6, 0), name='p0')
+        self.p1 = Pawn(b=self.board, team='Black', owner = self.player2, square=(6, 1), name='p1')
+        self.p2 = Pawn(b=self.board, team='Black', owner = self.player2, square=(6, 2), name='p2')
+        self.p3 = Pawn(b=self.board, team='Black', owner = self.player2, square=(6, 3), name='p3')
+        self.p4 = Pawn(b=self.board, team='Black', owner = self.player2, square=(6, 4), name='p4')
+        self.p5 = Pawn(b=self.board, team='Black', owner = self.player2, square=(6, 5), name='p5')
+        self.p6 = Pawn(b=self.board, team='Black', owner = self.player2, square=(6, 6), name='p6')
+        self.p7 = Pawn(b=self.board, team='Black', owner = self.player2, square=(6, 7), name='p7')
+        self.r0 = Rook(b=self.board, team='Black', owner = self.player2, square=(7, 0), name='r0')
+        self.r1 = Rook(b=self.board, team='Black', owner = self.player2, square=(7, 7), name='r1')
+        self.k0 = Knight(b=self.board, team='Black', owner = self.player2, square=(7, 1), name='k0')
+        self.k1 = Knight(b=self.board, team='Black', owner = self.player2, square=(7, 6), name='k1')
+        self.b0 = Bishop(b=self.board, team='Black', owner = self.player2, square=(7, 2), name='b0')
+        self.b1 = Bishop(b=self.board, team='Black', owner = self.player2, square=(7, 5), name='b1')
+        self.kk = King(b=self.board, team='Black', owner = self.player2, square=(7, 3), name='kk')
+        self.qq = Queen(b=self.board, team='Black', owner = self.player2, square=(7, 4), name='qq')
 
     def game_setup(self):
         self.game_type = ''
@@ -289,7 +302,7 @@ class Game:
         elif self.game_type == 'single':
             return Player(team='Black', CPU=True)
 
-    def game_state_set(self, player):
+    def game_state_set(self):
         a = [list(i.possible_moves.keys()) for i in Piece._registry if i.team == 'White']
         b = []
         for i in a:
@@ -305,12 +318,9 @@ class Game:
             for j in i:
                 b.append(j)
         if self.KK.square in b:
-            self.black_check = True
+            self.check = True
         if all(item in b for item in list(self.KK.possible_moves.keys())):
-            self.black_mate = True
-
-        # def game_state_get(self):
-        # retrieve
+            self.mate = True
 
     def move(self, b, p, dest):
         if p.possible_moves.get(dest, 'Invalid') == 'Empty':
@@ -333,33 +343,49 @@ class Game:
             for i in p.possible_moves.keys():
                 print(i, end=', ')
 
+    def random_move(self, player, b):
+        for i in Piece._registry:
+            i.move_search(b)
+        a = [i for i in Piece._registry if i.owner == player and len(i.possible_moves.keys()) > 0]
+        p = random.choice(a)
+        dest = random.choice(list(p.possible_moves.keys()))
+        #print(p.name, dest)
+        self.move(b, p, dest)
+
+
     def play(self):
         print('Game Starting!')
+        # game loop - this runs continuously until 
         while self.game == True:
             self.team_turn = next(self.teams)
             while self.turn == True:
                 g.board.print_board()
-                print('Turn: ' + self.team_turn)
-                self.game_state_set(self.team_turn)
+                print('Turn: ' + str(self.team_turn))
+                self.game_state_set()
                 while True:
-                    piece_input = input('Choose a piece: ')
-                    if eval('g.' + piece_input).team != self.team_turn:
-                        print('You must select the correct team type')
-                    else:
-                        eval('g.' + piece_input).move_search(g.board)
-                        print(eval('g.' + piece_input).possible_moves.keys())
-                        dest_input = str(input('Choose a destination square: '))
-                        print(eval('g.' + piece_input).possible_moves.keys())
-                        if eval(dest_input) not in eval('g.' + piece_input).possible_moves.keys():
-                            print('Invalid square.  Please try again.')
-                        else:
-                            g.move(b=g.board, p=eval('g.' + piece_input), dest=eval(dest_input))
+                    if self.game_type == 'single':
+                        if self.team_turn == self.player2:
+                            self.random_move(self.player2, self.board)
                             break
-                        self.game_state_set()
-                        if self.black_mate == True:
-                            print('Black is in check!')
-                        if self.white_mate == True:
-                            print('White is in check!')
+                        else:
+                            piece_input = input('Choose a piece: ')
+                            if eval('g.' + piece_input).owner != self.team_turn:
+                                print('You must select the correct team type')
+                            else:
+                                eval('g.' + piece_input).move_search(g.board)
+                                print(eval('g.' + piece_input).possible_moves.keys())
+                                dest_input = str(input('Choose a destination square: '))
+                                print(eval('g.' + piece_input).possible_moves.keys())
+                                if eval(dest_input) not in eval('g.' + piece_input).possible_moves.keys():
+                                    print('Invalid square.  Please try again.')
+                                else:
+                                    g.move(b=g.board, p=eval('g.' + piece_input), dest=eval(dest_input))
+                                    break
+                                self.game_state_set()
+                                if self.black_check == True:
+                                    print('Black is in check!')
+                                if self.white_check == True:
+                                    print('White is in check!')
 
                 print('new square: ', eval('g.' + piece_input).square)
                 print('move over!')
@@ -367,4 +393,6 @@ class Game:
 
 
 g = Game()
+
+
 g.play()
