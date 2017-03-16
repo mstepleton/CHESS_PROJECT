@@ -33,18 +33,19 @@ class Board:
         self.board[p.square] = '..'
 
 
-
 class Piece:
     """ This class is the super class for all pieces. It will store information and attributes common to all pieces:
         - Whether the piece is still on the board.
         - not sure - probably more things
     """
+    _registry = []
+
     def __init__(self, status = True):
        self.status = status
-       pass
+       self._registry.append(self)
 
-    # Inheritable Piece of possible_moves
-
+    def move_search(self):
+    	pass
 
 
 class Pawn(Piece):
@@ -58,6 +59,7 @@ class Pawn(Piece):
         self.move_set_enemy = self.move_set_adjust([(1, -1), (1, 1)])
         self.possible_moves = self.move_search(b)
         b.board[square] = self.name
+        Piece.__init__(self)
 
     def move_set_adjust(self, move_set):
         if self.team == 'Black':
@@ -80,7 +82,9 @@ class Pawn(Piece):
         for i in [(self.square[0] + i[0], self.square[1] + i[1]) for i in self.move_set_enemy]:
             if i in b.board.keys() and b.board[i] != '..' and b.board[i].isupper() != self.name.isupper():
                 self.possible_moves[i] = 'Enemy'
+        Piece.move_search(self)
         return self.possible_moves
+
 
 class Knight(Piece):
 
@@ -92,6 +96,7 @@ class Knight(Piece):
         self.move_set = [(2, 1), (2, -1), (1, 2), (1, -2), (-2, 1), (-2, -1), (-1, 2), (-1, -2)]
         self.possible_moves = self.move_search(b)
         b.board[square] = self.name
+        Piece.__init__(self)
 
     def move_search(self, b):
         self.possible_moves = {}
@@ -105,6 +110,7 @@ class Knight(Piece):
 
 
 class Bishop(Piece):
+    
     def __init__(self, b, team, square, name):
         self.team = team
         self.square = square
@@ -116,6 +122,7 @@ class Bishop(Piece):
                          [(-1, -1), (-2, -2), (-3, -3), (-4, -4), (-5, -5), (-6, -6), (-7, -7), (-8, -8)]]
         self.possible_moves = self.move_search(b)
         b.board[square] = self.name
+        Piece.__init__(self)
 
     def move_search(self, b):
         self.possible_moves = {}
@@ -128,13 +135,6 @@ class Bishop(Piece):
                     break
                 else:
                     break
-        """for direction in self.move_set:
-            for j in [(self.square[0] + i[0], self.square[1] + i[1]) for i in direction]:
-                if j in b.board.keys() and b.board[j] != '..' and b.board[j].isupper() != self.name.isupper():
-                    self.possible_moves[j] = 'Enemy'
-                else:
-                    break
-        """
         return self.possible_moves
 
 
@@ -151,6 +151,7 @@ class Rook(Piece):
                          [(0, -1), (0, -2), (0, -3), (0, -4), (0, -5), (0, -6), (0, -7), (0, -8)]]
         self.possible_moves = self.move_search(b)
         b.board[square] = self.name
+        Piece.__init__(self)
 
     def move_search(self, b):
         self.possible_moves = {}
@@ -177,6 +178,7 @@ class King(Piece):
         self.move_set = [(1, 0), (1, 1), (0, 1), (1, -1), (-1, 0), (-1, -1), (-1, 1), (0, -1)]
         self.possible_moves = self.move_search(b)
         b.board[square] = self.name
+        Piece.__init__(self)
 
     def move_search(self, b):
         self.possible_moves = {}
@@ -196,9 +198,17 @@ class Queen(Piece):
         self.square = square
         self.name = name
         self.moved = False
-        self.move_set = [(1, 0), (1, 1), (0, 1), (1, -1), (-1, 0), (-1, -1), (-1, 1), (0, -1)]
+        self.move_set = [[(1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0)],
+                         [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8)],
+                         [(-1, 0), (-2, 0), (-3, 0), (-4, 0), (-5, 0), (-6, 0), (-7, 0), (-8, 0)],
+                         [(0, -1), (0, -2), (0, -3), (0, -4), (0, -5), (0, -6), (0, -7), (0, -8)],
+                         [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8)],
+                         [(-1, 1), (-2, 2), (-3, 3), (-4, 4), (-5, 5), (-6, 6), (-7, 7), (-8, 8)],
+                         [(1, -1), (2, -2), (3, -3), (4, -4), (5, -5), (6, -6), (7, -7), (8, -8)],
+                         [(-1, -1), (-2, -2), (-3, -3), (-4, -4), (-5, -5), (-6, -6), (-7, -7), (-8, -8)]]
         self.possible_moves = self.move_search(b)
         b.board[square] = self.name
+        Piece.__init__(self)
 
     def move_search(self, b):
         self.possible_moves = {}
@@ -223,8 +233,6 @@ class Player:
 		self.losses = 0
 
 
-
-
 class Game:
     """ This class controls the flow of the game and the decision-making of the AI.  Also:
         - Function to check for game state (mate, etc.)
@@ -238,6 +246,8 @@ class Game:
         self.game_type = self.game_setup()
         self.player1 = Player()
         self.player2 = self.CPU_setup()
+        self.white_mate = False
+        self.black_mate = False
         self.P0 = Pawn(b=self.board, team='White', square=(1, 0), name='P0')
         self.P1 = Pawn(b=self.board, team='White', square=(1, 1), name='P1')
         self.P2 = Pawn(b=self.board, team='White', square=(1, 2), name='P2')
@@ -253,7 +263,7 @@ class Game:
         self.B0 = Bishop(b=self.board, team='White', square=(0, 2), name='B0')
         self.B1 = Bishop(b=self.board, team='White', square=(0, 5), name='B1')
         self.KK = King(b=self.board, team = 'White', square=(0, 3), name = 'KK')
-        #self.QQ = Queen(b=self.board, team = 'White', square=(0, 4), name = 'QQ')
+        self.QQ = Queen(b=self.board, team = 'White', square=(0, 4), name = 'QQ')
         self.p0 = Pawn(b=self.board, team='Black', square=(6, 0), name='p0')
         self.p1 = Pawn(b=self.board, team='Black', square=(6, 1), name='p1')
         self.p2 = Pawn(b=self.board, team='Black', square=(6, 2), name='p2')
@@ -268,7 +278,8 @@ class Game:
         self.k1 = Knight(b=self.board, team='Black', square=(7, 6), name='k1')
         self.b0 = Bishop(b=self.board, team='Black', square=(7, 2), name='b0')
         self.b1 = Bishop(b=self.board, team='Black', square=(7, 5), name='b1')
-        self.kk = King(b=self.board, team = 'White', square=(7, 3), name = 'kk')
+        self.kk = King(b=self.board, team = 'Black', square=(7, 3), name = 'kk')
+        self.qq = Queen(b=self.board, team = 'Black', square=(7, 4), name = 'qq')
 
     def game_setup(self):
     	self.game_type = ''
@@ -285,6 +296,11 @@ class Game:
     	elif self.game_type == 'single':
     		return Player(team = 'Black', CPU = True)
 
+    #def game_state_set(self):
+    	# check is black is in mate
+
+    #def game_state_get(self):
+    	# retrieve 
 
     def move(self, b, p, dest):
         if p.possible_moves.get(dest, 'Invalid') == 'Empty':
@@ -330,8 +346,6 @@ class Game:
                 print('new square: ', eval('g.'+piece_input).square)
                 print('move over!')
                 break
-
-
 
 
 g = Game()
